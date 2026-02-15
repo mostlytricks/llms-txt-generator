@@ -9,6 +9,10 @@ from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 import logging
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -118,7 +122,7 @@ def get_agent():
     
     agent = Agent(
         name="llms-txt-generator",
-        model="gemini-2.0-flash-exp", # Or user's preferred model
+        model="gemini-1.5-flash-latest", # Or user's preferred model
         tools=[generate_llms_txt],
         system_prompt="You are a helpful assistant that can generate llms.txt files from documentation websites using the generate_llms_txt tool."
     )
