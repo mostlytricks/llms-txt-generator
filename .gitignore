@@ -156,6 +156,7 @@ cython_debug/
 # Project Specific
 outputs/
 !outputs/adk-docs*
+test_outputs/
 llms.txt
 llms-full.txt
 uv.lock
