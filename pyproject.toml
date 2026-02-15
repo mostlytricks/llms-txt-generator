@@ -1,0 +1,13 @@
+[project]
+name = "llms-txt-generator"
+version = "0.1.0"
+description = "An ADK agent to generate llms.txt files from documentation"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "google-adk",
+    "beautifulsoup4",
+    "markdownify",
+    "requests",
+    "lxml",
+]
