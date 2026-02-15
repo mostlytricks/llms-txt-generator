@@ -198,7 +198,8 @@ instruction = (
     "1. ALWAYS call `check_official_docs` first. If official docs exist, you are done (report success).\n"
     "2. If not, call `generate_via_sitemap`. This is the preferred generation method.\n"
     "3. ONLY if sitemap generation returns 'failed' or 'no pages', call `generate_via_recursion` as a fallback.\n"
-    "Do not skip steps. Prioritize official sources, then sitemaps, then spidering."
+    "Do not skip steps. Prioritize official sources, then sitemaps, then spidering.\n"
+    "IMPORTANT: ALWAYS set `output_dir='outputs'` in your tool calls. Do not create other directories."
 )
 
 llms_txt_agent = LlmAgent(
