@@ -1,14 +1,24 @@
 # LLMs.txt Generator Agent
 
-A powerful AI agent built with **Google ADK** and **Gemini Flash** to automatically generate `llms.txt` and `llms-full.txt` documentation files from any website.
+A powerful, autonomous AI agent built with **Google ADK** and **Gemini Flash** that generates standard `llms.txt` documentation for any website.
 
-It supports:
-- **Sitemap Discovery**: Automatically finds `sitemap.xml` (even at domain roots).
-- **Prefix Filtering**: strict crawling of specific sub-paths (great for monorepos like LangChain).
-- **Markdown Conversion**: Clean, readability-focused conversion.
-- **Custom Output**: Configurable naming, versioning, and output directories.
+It intelligently decides the best strategy:
+1.  **Check Official**: First, it looks for an existing `/llms.txt`.
+2.  **Sitemap Discovery**: If missing, it tries to find and crawl `sitemap.xml`.
+3.  **Recursive Fallback**: If no sitemap is found, it falls back to smart recursive crawling.
+
+## Features
+
+- **Smart Strategy**: Auto-switching between Official -> Sitemap -> Recursive web crawling.
+- **Prefix Isolation**: Strictly follows URL path prefixes (e.g., `.../docs/python/`) to avoid out-of-scope crawling.
+- **Markdown Conversion**: Converts HTML to clean, LLM-friendly Markdown.
+- **Standard Output**: Generates both `llms.txt` (index) and `llms-full.txt` (full content).
 
 ## Installation
+
+### Prerequisites
+- Python 3.10+
+- [uv](https://github.com/astral-sh/uv) (recommended) or pip
 
 1.  **Clone the repository**:
     ```bash
@@ -16,71 +26,62 @@ It supports:
     cd llms-txt-generator
     ```
 
-2.  **Install dependencies** (using `uv` is recommended):
+2.  **Install dependencies**:
     ```bash
     uv sync
-    # Or simply:
-    uv run pip install -r requirements.txt
+    # Or: pip install -r requirements.txt
     ```
 
 3.  **Configure Environment**:
-    Create a `.env` file and add your Google API key:
+    Create a `.env` file with your API key:
     ```bash
-    GOOGLE_API_KEY=your_api_key_here
+    GOOGLE_API_KEY=your_key_here
     ```
 
 ## Usage
 
-### CLI (Command Line Interface)
-
-The easiest way to use the generator is via the command line.
+### 1. CLI (Runner Pattern)
+The agent now runs directly with a natural language prompt.
 
 ```bash
-uv run python agent.py <URL> [OPTIONS]
+# General usage
+uv run -m llmstxt_generate_agent.agent "Generate documentation for https://google.github.io/adk-docs"
+
+# Specific instructions
+uv run -m llmstxt_generate_agent.agent "Generate docs for https://strandsagents.com and name the service strands-agents"
 ```
 
-**Options:**
-- `URL`: The root URL of the documentation to crawl.
-- `--name`: Service name for the output files (e.g., `adk-docs`).
-- `--version`: Version string (default: `1.0.0`).
-- `--out`: Output directory (default: `outputs`).
-
-**Examples:**
-
-*Generate for ADK Docs:*
-```bash
-uv run python agent.py https://google.github.io/adk-docs --name adk-docs
-```
-
-*Generate for LangChain (Python only):*
-```bash
-uv run python agent.py https://docs.langchain.com/oss/python/langchain/ --name langchain-python --version 0.1.0
-```
-
-### Programmatic Usage (ADK)
-
-You can import the tool or agent into your own Python code.
+### 2. Python Agent (Runner Pattern)
+Integrate the agent into your ADK application using the Runner pattern for natural language control.
 
 ```python
-from agent import generate_llms_txt
+import asyncio
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from llmstxt_generate_agent.agent import llms_txt_agent
 
-# Direct tool usage
-result = generate_llms_txt(
-    url="https://google.github.io/adk-docs",
-    service_name="adk-docs",
-    version="1.0.0",
-    output_dir="outputs"
-)
-print(result)
+async def main():
+    runner = Runner(session_service=InMemorySessionService())
+    
+    # The agent understands natural language and will pick the right tools
+    prompt = "Generate documentation for https://strandsagents.com"
+    
+    async for event in runner.run_async(llms_txt_agent, prompt):
+        if event.content and event.content.parts:
+            print(event.content.parts[0].text)
+
+if __name__ == "__main__":
+    asyncio.run(main())
 ```
 
-## Output Format
+## Project Structure
 
-The agent generates two files in the `outputs/` directory:
-
-1.  **`{name}-llms-v{version}.txt`**: A lightweight index file with metadata and a list of links.
-2.  **`{name}-llms-full-v{version}.txt`**: A merged file containing the full Markdown content of all crawled pages, formatted for LLM consumption.
+- `llmstxt_generate_agent/`: Core package.
+  - `agent.py`: Agent definition (`LlmAgent`).
+  - `utils/`: Crawlers (`SitemapCrawler`, `RecursiveCrawler`), formatters, and converters.
+- `tests/`: Verification scripts (`test_runner.py`, `test_usage.py`).
+- `outputs/`: Generated documentation files.
+- `real-llms-txt/`: Downloaded official documentation files.
 
 ## License
-
 Apache 2.0
